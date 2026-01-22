@@ -29,7 +29,7 @@ jobs:
           import requests
           import sys
 
-          PROMETHEUS_URL = "http://localhost:9090"
+          PROMETHEUS_URL = "https://prometheus.demo.do.prometheus.io"
 
           def query_prometheus(query):
               url = f"{PROMETHEUS_URL}/api/v1/query"
