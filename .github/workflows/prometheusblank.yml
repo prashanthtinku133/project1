@@ -1,13 +1,9 @@
-name: Prometheus Monitoring Automation
+name: Prometheus Monitoring Automation (Mock Mode)
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
-
-  schedule:
-    - cron: "*/30 * * * *"   # runs every 30 minutes
-
-  workflow_dispatch:        # manual trigger
 
 jobs:
   monitoring:
@@ -19,96 +15,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python dependencies
-        run: |
-          pip install requests
-
-      - name: Run Prometheus Metrics Check
+      - name: Run Prometheus Monitoring (Mock)
         run: |
           python << 'EOF'
-          import requests
           import sys
+          import random
 
-          PROMETHEUS_URL = "https://prometheus.demo.do.prometheus.io"
+          print("PROMETHEUS MONITORING JOB STARTED")
+          print("Running in MOCK MODE (CI-safe)")
 
-          def query_prometheus(query):
-              url = f"{PROMETHEUS_URL}/api/v1/query"
-              response = requests.get(url, params={"query": query}, timeout=10)
-              response.raise_for_status()
-              return response.json()
-
-          def check_targets():
-              print("\n--- TARGET HEALTH CHECK ---")
-              result = query_prometheus("up")
-
-              for metric in result["data"]["result"]:
-                  instance = metric["metric"].get("instance", "unknown")
-                  status = metric["value"][1]
-
-                  if status == "1":
-                      print(f"OK   : {instance} is UP")
-                  else:
-                      print(f"ALERT: {instance} is DOWN")
-
-          def check_cpu():
-              print("\n--- CPU USAGE CHECK ---")
-              query = '100 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100'
-              result = query_prometheus(query)
-
-              if not result["data"]["result"]:
-                  print("CPU data not available")
-                  return
-
-              cpu = float(result["data"]["result"][0]["value"][1])
-              print(f"CPU Usage: {cpu:.2f}%")
-
-              if cpu > 80:
-                  print("ALERT: High CPU usage")
-
-          def check_memory():
-              print("\n--- MEMORY USAGE CHECK ---")
-              query = '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'
-              result = query_prometheus(query)
-
-              if not result["data"]["result"]:
-                  print("Memory data not available")
-                  return
-
-              memory = float(result["data"]["result"][0]["value"][1])
-              print(f"Memory Usage: {memory:.2f}%")
-
-              if memory > 80:
-                  print("ALERT: High Memory usage")
-
-          def check_errors():
-              print("\n--- HTTP 5XX ERROR CHECK ---")
-              query = 'sum(rate(http_requests_total{status=~"5.."}[5m]))'
-              result = query_prometheus(query)
-
-              if not result["data"]["result"]:
-                  print("No HTTP errors")
-                  return
-
-              errors = float(result["data"]["result"][0]["value"][1])
-              print(f"5xx Error Rate: {errors}")
-
-              if errors > 5:
-                  print("ALERT: High HTTP 5xx error rate")
-
-          def main():
-              print("PROMETHEUS MONITORING JOB STARTED")
-              print(f"Prometheus URL: {PROMETHEUS_URL}")
-
-              check_targets()
-              check_cpu()
-              check_memory()
-              check_errors()
-
-              print("\nMONITORING JOB COMPLETED")
-
-          try:
-              main()
-          except Exception as e:
-              print(f"ERROR: {e}")
-              sys.exit(1)
-          EOF
+          # ---- MOCK TARGET CHECK ----
+          print("\n--- TARGET HEALTH CHECK ---")
+          targets = {
+              "node1:9100": 1,
+              "node2:9100": 1,
+              "node3:910
