@@ -1,4 +1,4 @@
-name: Prometheus Monitoring Automation (Mock Mode)
+name: Prometheus Monitoring Automation (Mock)
 
 on:
   workflow_dispatch:
@@ -15,18 +15,60 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run Prometheus Monitoring (Mock)
+      - name: Run Prometheus Monitoring (Mock Mode)
         run: |
           python << 'EOF'
-          import sys
           import random
+          import sys
 
           print("PROMETHEUS MONITORING JOB STARTED")
           print("Running in MOCK MODE (CI-safe)")
 
-          # ---- MOCK TARGET CHECK ----
+          # ---------------------------
+          # TARGET HEALTH CHECK
+          # ---------------------------
           print("\n--- TARGET HEALTH CHECK ---")
           targets = {
               "node1:9100": 1,
               "node2:9100": 1,
-              "node3:910
+              "node3:9100": 0
+          }
+
+          for instance, status in targets.items():
+              if status == 1:
+                  print(f"OK   : {instance} is UP")
+              else:
+                  print(f"ALERT: {instance} is DOWN")
+
+          # ---------------------------
+          # CPU CHECK
+          # ---------------------------
+          print("\n--- CPU USAGE CHECK ---")
+          cpu_usage = round(random.uniform(40, 95), 2)
+          print(f"CPU Usage: {cpu_usage}%")
+
+          if cpu_usage > 80:
+              print("ALERT: High CPU usage detected")
+
+          # ---------------------------
+          # MEMORY CHECK
+          # ---------------------------
+          print("\n--- MEMORY USAGE CHECK ---")
+          memory_usage = round(random.uniform(30, 90), 2)
+          print(f"Memory Usage: {memory_usage}%")
+
+          if memory_usage > 80:
+              print("ALERT: High Memory usage detected")
+
+          # ---------------------------
+          # ERROR RATE CHECK
+          # ---------------------------
+          print("\n--- HTTP 5XX ERROR CHECK ---")
+          error_rate = random.randint(0, 10)
+          print(f"5xx Error Rate: {error_rate}")
+
+          if error_rate > 5:
+              print("ALERT: High HTTP 5xx error rate")
+
+          print("\nMONITORING JOB COMPLETED SUCCESSFULLY")
+          EOF
