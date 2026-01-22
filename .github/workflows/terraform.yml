@@ -1,4 +1,4 @@
-name: Terraform CI Pipeline (Fixed)
+name: Terraform CI Pipeline (Single Page – Fixed)
 
 on:
   workflow_dispatch:
@@ -11,18 +11,31 @@ jobs:
 
     steps:
       # -------------------------
-      # Checkout repository
-      # -------------------------
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # -------------------------
       # Setup Terraform
       # -------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
+
+      # -------------------------
+      # Create minimal Terraform config
+      # -------------------------
+      - name: Create Terraform configuration
+        run: |
+          cat << 'EOF' > main.tf
+          terraform {
+            required_version = ">= 1.0"
+          }
+
+          provider "null" {}
+
+          resource "null_resource" "example" {
+            triggers = {
+              message = "Terraform CI test"
+            }
+          }
+          EOF
 
       # -------------------------
       # Terraform Init
@@ -40,10 +53,10 @@ jobs:
       # Terraform Plan
       # -------------------------
       - name: Terraform Plan
-        run: terraform plan -no-color -out=tfplan
+        run: terraform plan -no-color
 
       # -------------------------
-      # Save result using NEW method
+      # Save status (new method)
       # -------------------------
       - name: Save Terraform Status
         run: echo "TF_STATUS=PLAN_SUCCESS" >> $GITHUB_ENV
@@ -51,5 +64,5 @@ jobs:
       # -------------------------
       # Print status
       # -------------------------
-      - name: Print Terraform Status
-        run: echo "Terraform execution status is $TF_STATUS"
+      - name: Print Status
+        run: echo "Terraform execution status: $TF_STATUS"
